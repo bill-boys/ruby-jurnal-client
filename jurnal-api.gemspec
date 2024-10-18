@@ -38,7 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "webmock",          "3.8.3"
 
   # dependency
-  spec.add_dependency "faraday",                      "0.15.4"
-  spec.add_dependency "faraday_middleware",           "0.13.1"
+  spec.add_dependency "faraday",                      "2.12.0"
+  spec.add_dependency "faraday-multipart",            "1.0.4"
   spec.add_dependency "dotenv",                       "2.8.1"
 end
