@@ -46,6 +46,10 @@ module JurnalApi
       def sales_order_receive_payments(id, params = {})
         get("sales_orders/#{id}/sales_order_payments", params)
       end
+
+      def sales_order_templates
+        get('sales_orders/templates')
+      end
     end
   end
 end
