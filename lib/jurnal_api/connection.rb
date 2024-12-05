@@ -1,4 +1,5 @@
-require 'faraday_middleware'
+require 'faraday'
+require 'faraday/multipart'
 
 Dir[File.expand_path('../../faraday/*.rb', __FILE__)].each{|f| require f}
 
@@ -27,7 +28,7 @@ module JurnalApi
         unless raw
           case format.to_s.downcase
             when 'json'
-              connection.use(FaradayMiddleware::ParseJson, :content_type => /\bjson$/)
+              connection.use(Faraday::Response::Json, :content_type => /\bjson$/)
           end
         end
 

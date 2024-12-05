@@ -210,4 +210,45 @@ RSpec.describe JurnalApi::Client::SalesOrders do
       end
     end
   end
+
+  describe '#sales_order_templates' do
+    before do
+      expected_url = module_endpoint + '/templates.json'
+
+      @expected_stub =
+        stub_request(:get, expected_url)
+        .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+    end
+
+    let(:dummy_response) do
+      {
+        "total_data": 2,
+        "data": [
+          {
+            "id": "default-1",
+            "name": "1",
+            "image_preview": "https://jurnal-assets-production.jurnal.id/images/templete_preview/invoice_preview/invoice_preview_1.png",
+            "setting_link": "/company/setting/ondemand_pdf"
+          },
+          {
+            "id": "default-2",
+            "name": "2",
+            "image_preview": "https://jurnal-assets-production.jurnal.id/images/templete_preview/invoice_preview/invoice_preview_2.png"
+          }
+        ]
+      }.to_json
+    end
+
+    subject { client.sales_order_templates }
+
+    it 'should hit the expected stub' do
+      subject
+
+      expect(@expected_stub).to have_been_requested
+    end
+
+    it 'should return a json response' do
+      expect(subject).to eq dummy_response
+    end
+  end
 end
