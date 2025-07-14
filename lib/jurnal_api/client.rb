@@ -17,5 +17,6 @@ module JurnalApi
     include JurnalApi::Client::TransactionPdfs
     include JurnalApi::Client::Contacts
     include JurnalApi::Client::HealthChecks
+    include JurnalApi::Client::GenerateShortenLink
   end
 end

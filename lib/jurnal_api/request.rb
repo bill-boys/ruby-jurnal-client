@@ -40,7 +40,7 @@ module JurnalApi
         when :get, :delete
           request.url(URI::DEFAULT_PARSER.escape(path), options)
         when :post, :put, :patch
-          request.path = URI::DEFAULT_PARSER.escape(path)
+          request.url(URI::DEFAULT_PARSER.escape(path))
           request.body = options unless options.empty?
         end
       end
