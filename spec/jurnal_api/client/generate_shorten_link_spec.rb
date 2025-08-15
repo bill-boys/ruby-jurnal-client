@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe JurnalApi::Client::GenerateShortenLink do
   let(:client) { JurnalApi::Client.new }
-  let(:module_endpoint) { 'https://sandbox-api.jurnal.id/core/api/v1/generate_shorten_link' }
+  let(:module_endpoint) { 'https://sandbox-api.jurnal.id/core/api/internal' }
 
   describe '#generate_shorten_link' do
     context 'successful' do
@@ -17,7 +17,7 @@ RSpec.describe JurnalApi::Client::GenerateShortenLink do
       end
 
       before do
-        expected_url = "#{module_endpoint}/generate_shorten_link?payment_url=#{payment_url}"
+        expected_url = "#{module_endpoint}/transactions/generate_shorten_link?payment_url=#{payment_url}"
         
         @expected_stub =
           stub_request(:post, expected_url)
@@ -33,16 +33,16 @@ RSpec.describe JurnalApi::Client::GenerateShortenLink do
       end
 
       it 'should return a json response' do
-        expect(subject).to eq dummy_response
+        expect(subject).to eq dummy_response.to_json
       end
 
       it 'should set api_version to api/internal' do
-        expect(client).to receive(:api_version=).with('api/internal')
         subject
+        expect(client.api_version).to eq('api/internal')
       end
 
       it 'should set format to nil' do
-        expect(client).to receive(:format=).with('nil')
+        expect(client).to receive(:format=).with(nil)
         subject
       end
     end
