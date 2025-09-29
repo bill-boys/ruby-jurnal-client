@@ -6,6 +6,64 @@ RSpec.describe JurnalApi::Client::SalesOrders do
   let(:client)          { JurnalApi::Client.new }
   let(:module_endpoint) { 'https://sandbox-api.jurnal.id/core/api/v1/sales_orders' }
 
+  describe '#list' do
+    context 'successful' do
+      let(:dummy_params) { { page: 1, page_size: 10 } }
+      let(:dummy_response) do
+        {
+          "total_data": 100,
+          "data": [
+            read_file_fixture('responses/sales_orders/create_success.json')['sales_order']
+          ]
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:get, "#{module_endpoint}.json")
+          .with(query: dummy_params)
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_orders(dummy_params) }
+
+      it 'should hit the expected stub' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+
+    context 'without params' do
+      let(:dummy_response) do
+        {
+          "total_data": 100,
+          "data": []
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:get, "#{module_endpoint}.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_orders }
+
+      it 'should hit the expected stub' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+  end
+
   describe '#get' do
     context 'successful' do
       let(:dummy_response) { read_file_fixture('responses/sales_orders/create_success.json') }
@@ -249,6 +307,83 @@ RSpec.describe JurnalApi::Client::SalesOrders do
 
     it 'should return a json response' do
       expect(subject).to eq dummy_response
+    end
+  end
+
+  describe '#sales_order_close' do
+    context 'successful' do
+      let(:so_id) { 1234 }
+      let(:dummy_response) do
+        {
+          "status": "success",
+          "message": "Sales order has been closed successfully"
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:post, "#{module_endpoint}/#{so_id}/close_order.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_close(so_id) }
+
+      it 'should hit the expected stub' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+  end
+
+  describe '#sales_order_delete' do
+    context 'successful' do
+      let(:so_id) { 1234 }
+      let(:dummy_response) do
+        {
+          "status": "success",
+          "message": "Sales order has been deleted successfully"
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:delete, "#{module_endpoint}/#{so_id}.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_delete(so_id) }
+
+      it 'should hit the expected stub' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+
+    context 'failed' do
+      context 'when sales order not found' do
+        let(:so_id) { 9999 }
+
+        before do
+          @expected_stub = stub_request(:delete, "#{module_endpoint}/#{so_id}.json")
+            .to_return(status: 404, body: '{"error": "Sales order not found"}', headers: header_json)
+        end
+
+        subject { client.sales_order_delete(so_id) }
+
+        it 'should hit the expected stub' do
+          expect { subject }.to raise_error JurnalApi::NotFound
+
+          expect(@expected_stub).to have_been_requested
+        end
+      end
     end
   end
 end

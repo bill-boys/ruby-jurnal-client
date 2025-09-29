@@ -50,6 +50,10 @@ module JurnalApi
       def sales_order_templates
         get('sales_orders/templates')
       end
+
+      def sales_order_delete(id)
+        delete("sales_orders/#{id}")
+      end
     end
   end
 end
