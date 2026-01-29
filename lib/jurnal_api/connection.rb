@@ -37,7 +37,7 @@ module JurnalApi
         connection.adapter adapter
 
         case authorization_path
-        when 'partner/core'
+        when 'partner/core', 'jwt/core'
           connection.headers['Authorization'] = "Bearer #{access_token}"
         when 'core', '', nil
           connection.headers['apikey'] = "#{access_token}"
