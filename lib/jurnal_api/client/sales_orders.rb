@@ -57,10 +57,26 @@ module JurnalApi
         delete("sales_orders/#{id}")
       end
 
-      # Sanitize the sales order ID for use in URLs, since the id can be a string that may contain special characters like slashes or spaces. This method ensures that the ID is properly URL-encoded.
-      # currently only used in sales_order_find and sales_order_delete, but can be used in other methods if needed.
+      # Sanitize the sales order ID for use in URLs. This method URL-encodes IDs that may contain
+      # special characters like slashes, spaces, ampersands, hashes, etc. This is critical because
+      # we removed URI::DEFAULT_PARSER.escape from request.rb for GET/DELETE methods to avoid
+      # double-encoding. All IDs must be pre-sanitized at the source (here) to ensure proper URL construction.
+      #
+      # Args:
+      #   id - The sales order ID (string, integer, or nil)
+      #
+      # Returns:
+      #   - nil for nil or empty string inputs
+      #   - URL-encoded string for all other inputs (converted to string first)
+      #
+      # Example:
+      #   sanitize_sales_order_id('SO/2024/001')  # => 'SO%2F2024%2F001'
+      #   sanitize_sales_order_id(1234)           # => '1234'
+      #   sanitize_sales_order_id('')             # => nil
+      #   sanitize_sales_order_id(nil)            # => nil
       def sanitize_sales_order_id(id)
-        ERB::Util.url_encode(id.to_s) if id.is_a?(String) && !id.empty?
+        return nil if id.nil? || (id.is_a?(String) && id.empty?)
+        ERB::Util.url_encode(id.to_s)
       end
     end
   end
