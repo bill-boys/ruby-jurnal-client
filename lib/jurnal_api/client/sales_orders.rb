@@ -10,6 +10,7 @@ module JurnalApi
       end
 
       def sales_order_find(id, params = {})
+        id = sanitize_sales_order_id(id)
         response = get("sales_orders/#{id}", params)
         response
       end
@@ -52,7 +53,14 @@ module JurnalApi
       end
 
       def sales_order_delete(id)
+        id = sanitize_sales_order_id(id)
         delete("sales_orders/#{id}")
+      end
+
+      # Sanitize the sales order ID for use in URLs, since the id can be a string that may contain special characters like slashes or spaces. This method ensures that the ID is properly URL-encoded.
+      # currently only used in sales_order_find and sales_order_delete, but can be used in other methods if needed.
+      def sanitize_sales_order_id(id)
+        ERB::Util.url_encode(id.to_s) if id.is_a?(String) && !id.empty?
       end
     end
   end

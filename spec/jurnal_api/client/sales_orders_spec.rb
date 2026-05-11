@@ -149,7 +149,7 @@ RSpec.describe JurnalApi::Client::SalesOrders do
       end
 
       before do
-        @expected_stub = 
+        @expected_stub =
           stub_request(:post, module_endpoint + '.json')
             .with(body: dummy_params.to_json)
             .to_return(status: 201, body: dummy_response.to_json, headers: header_json)
@@ -383,6 +383,178 @@ RSpec.describe JurnalApi::Client::SalesOrders do
 
           expect(@expected_stub).to have_been_requested
         end
+      end
+    end
+  end
+
+  describe '#sanitize_sales_order_id' do
+    context 'with string ID containing special characters' do
+      it 'should URL-encode forward slashes' do
+        so_id = 'SO/2024/001'
+        expected = 'SO%2F2024%2F001'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+
+      it 'should URL-encode spaces' do
+        so_id = 'SO 2024 001'
+        expected = 'SO%202024%20001'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+
+      it 'should URL-encode multiple special characters' do
+        so_id = 'SO/2024 & 001'
+        expected = 'SO%2F2024%20%26%20001'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+
+      it 'should URL-encode hash/pound symbols' do
+        so_id = 'SO#2024'
+        expected = 'SO%232024'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+    end
+
+    context 'with numeric ID' do
+      it 'should convert to string and handle correctly' do
+        so_id = 1234
+        expected = '1234'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+    end
+
+    context 'with empty or nil ID' do
+      it 'should return nil for empty string' do
+        so_id = ''
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to be_nil
+      end
+
+      it 'should return nil for nil' do
+        so_id = nil
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'with ID containing no special characters' do
+      it 'should return the same string' do
+        so_id = 'SO2024001'
+        expected = 'SO2024001'
+
+        result = client.sanitize_sales_order_id(so_id)
+        expect(result).to eq expected
+      end
+    end
+  end
+
+  describe '#get with special characters in ID' do
+    context 'when sales order ID contains forward slashes' do
+      let(:so_id) { 'SO/2024/001' }
+      let(:encoded_id) { 'SO%2F2024%2F001' }
+      let(:dummy_response) { read_file_fixture('responses/sales_orders/create_success.json') }
+      let(:dummy_params) { { for_internal: true } }
+
+      before do
+        @expected_stub = stub_request(:get, "#{module_endpoint}/#{encoded_id}.json")
+          .with(query: dummy_params)
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_find(so_id, dummy_params) }
+
+      it 'should properly URL-encode the ID' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+
+    context 'when sales order ID contains spaces' do
+      let(:so_id) { 'SO 2024 001' }
+      let(:encoded_id) { 'SO%202024%20001' }
+      let(:dummy_response) { read_file_fixture('responses/sales_orders/create_success.json') }
+
+      before do
+        @expected_stub = stub_request(:get, "#{module_endpoint}/#{encoded_id}.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_find(so_id) }
+
+      it 'should properly URL-encode spaces in the ID' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+    end
+  end
+
+  describe '#delete with special characters in ID' do
+    context 'when sales order ID contains forward slashes' do
+      let(:so_id) { 'SO/2024/001' }
+      let(:encoded_id) { 'SO%2F2024%2F001' }
+      let(:dummy_response) do
+        {
+          "status": "success",
+          "message": "Sales order has been deleted successfully"
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:delete, "#{module_endpoint}/#{encoded_id}.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_delete(so_id) }
+
+      it 'should properly URL-encode the ID' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
+      end
+
+      it 'should return a json response' do
+        expect(subject).to eq dummy_response
+      end
+    end
+
+    context 'when sales order ID contains spaces and special characters' do
+      let(:so_id) { 'SO 2024/001' }
+      let(:encoded_id) { 'SO%202024%2F001' }
+      let(:dummy_response) do
+        {
+          "status": "success",
+          "message": "Sales order has been deleted successfully"
+        }
+      end
+
+      before do
+        @expected_stub = stub_request(:delete, "#{module_endpoint}/#{encoded_id}.json")
+          .to_return(status: 200, body: dummy_response.to_json, headers: header_json)
+      end
+
+      subject { client.sales_order_delete(so_id) }
+
+      it 'should properly URL-encode special characters and spaces' do
+        subject
+
+        expect(@expected_stub).to have_been_requested
       end
     end
   end
