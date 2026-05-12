@@ -38,7 +38,7 @@ module JurnalApi
 
         case method
         when :get, :delete
-          request.url(URI::DEFAULT_PARSER.escape(path), options)
+          request.url(path, options)
         when :post, :put, :patch
           request.url(URI::DEFAULT_PARSER.escape(path))
           request.body = options unless options.empty?
